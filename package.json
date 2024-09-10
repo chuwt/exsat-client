@@ -18,6 +18,7 @@
     "crypto-js": "^4.2.0",
     "dotenv": "^16.4.5",
     "eosjs": "^22.1.0",
+    "express": "^4.20.0",
     "fs-extra": "^11.2.0",
     "moment": "^2.30.1",
     "node-cron": "^3.0.3",

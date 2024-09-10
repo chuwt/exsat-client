@@ -13,6 +13,8 @@ import { envCheck, sleep } from '../utils/common';
 import ExsatApi from '../utils/exsat-api';
 import TableApi from '../utils/table-api';
 import { ClientType, ContractName } from '../utils/enumeration';
+import express, { Request, Response } from 'express';
+import {start} from "node:repl";
 
 // Global variables to track job status and store API instances
 let [endorseRunning, endorseCheckRunning, startupStatus] = [false, false, false];
@@ -20,6 +22,10 @@ let accountName: string;
 let exsatApi: ExsatApi;
 let tableApi: TableApi;
 let lastEndorseHeight: number = 0;
+const app = express();
+const PORT: number = 8081;
+let lastSubmittedHeight = 0;
+
 
 // Check if the account is qualified to endorse
 function isEndorserQualified(endorsers: {
@@ -36,6 +42,7 @@ async function checkAndSubmitEndorsement(accountName: string, height: number, ha
     let isQualified = isEndorserQualified(endorsement.requested_validators, accountName);
     if (isQualified && !isEndorserQualified(endorsement.provider_validators, accountName)) {
       await submitEndorsement(accountName, height, hash);
+      lastSubmittedHeight = height;
     }
   } else {
     await submitEndorsement(accountName, height, hash);
@@ -159,11 +166,24 @@ async function main() {
   await exsatApi.checkClient(ClientType.Validator);
 }
 
+app.get('/ping', (req: Request, res: Response) => {
+  res.send('pong');
+});
+
+const startServer = async (): Promise<void> => {
+  return new Promise<void>((resolve) => {
+    app.listen(PORT, () => {
+      logger.info(`server running on http://localhost:${PORT}`);
+    });
+  });
+};
+
 // Entry point of the application
 (async () => {
   try {
-    await main();
+    // await main();
     await setupCronJobs();
+    await startServer();
   } catch (e) {
     logger.error(e);
   }
