@@ -181,7 +181,7 @@ const startServer = async (): Promise<void> => {
 // Entry point of the application
 (async () => {
   try {
-    // await main();
+    await main();
     await setupCronJobs();
     await startServer();
   } catch (e) {
